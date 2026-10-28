@@ -1,121 +1,49 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import CategoryFilter from './components/CategoryFilter.jsx'
+import ExpenseForm from './components/ExpenseForm.jsx'
+import ExpenseList from './components/ExpenseList.jsx'
+import {
+  ALL_CATEGORIES,
+  calculateTotal,
+  filterExpenses,
+  formatAmount,
+} from './utils/expenses.js'
 
+// Owns all expense data and the active filter; children receive values and callbacks.
 function App() {
-  const [count, setCount] = useState(0)
+  const [expenses, setExpenses] = useState([])
+  const [filter, setFilter] = useState(ALL_CATEGORIES)
+
+  const visibleExpenses = filterExpenses(expenses, filter)
+  const total = calculateTotal(visibleExpenses)
+
+  function addExpense(expense) {
+    setExpenses((current) => [
+      ...current,
+      { id: crypto.randomUUID(), ...expense },
+    ])
+  }
+
+  function deleteExpense(id) {
+    setExpenses((current) => current.filter((expense) => expense.id !== id))
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <main className="app">
+      <h1>Expense Tracker</h1>
+      <ExpenseForm onAdd={addExpense} />
+      <section className="summary">
+        <CategoryFilter value={filter} onChange={setFilter} />
+        <p>
+          Showing <strong data-cy="count">{visibleExpenses.length}</strong>{' '}
+          {visibleExpenses.length === 1 ? 'expense' : 'expenses'}
+        </p>
+        <p>
+          Total: <strong data-cy="total">{formatAmount(total)}</strong>
+        </p>
       </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <ExpenseList expenses={visibleExpenses} onDelete={deleteExpense} />
+    </main>
   )
 }
 
